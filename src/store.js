@@ -1,9 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit';
-import reducer from './sliceCovid';
+import datePickerSlice from './slices/datePickerSlice';
+import covidDataSlice from './slices/covidDataSlice';
 
 
 const store = configureStore({
-    reducer: reducer,
+    reducer: {
+        datePickerSlice,
+        covidDataSlice
+    },
     middleware: defaultMiddleware => defaultMiddleware(),
     devTools: process.env.NODE_ENV !== 'production',
 })
