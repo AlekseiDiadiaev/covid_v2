@@ -1,40 +1,59 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { minMaxDateFetch } from './asyncThunk';
+import { dataByCountriesFetched, countriesListFetched, dataByDaysFetched } from './asyncThunk';
 
 export const covidDataSlice = createSlice({
     name: 'covidData',
     initialState: {
-        allData: [],
-        currentData: [],
-        countryList: [],
+        selectedData: [],
+        shownData: [],
+        countriesList: [],
+        dataByDays: [],
+        loading: false,
+        error: false
     },
     reducers: {
-      
+        loadingChanged(state, action) {
+            state.loading = action.payload;
+        },
+        shownDataSet(state, action) {
+            state.shownData = action.payload;
+        },
     },
     extraReducers: (builder) => {
         builder
-            // .addCase(minMaxDateFetch.fulfilled, (state, action) => {
-            //     const { minDate, maxDate } = action.payload
-            //     state.minDate = minDate
-            //     state.maxDate = maxDate
-            //     state.selectedStartDate = minDate
-            //     state.selectedEndDate = maxDate
-            // })
-            //   // You can chain calls, or have separate `builder.addCase()` lines each time
-            //   .addCase(decrement, (state, action) => {})
-            //   // You can match a range of action types
-            //   .addMatcher(
-            //     isRejectedAction,
-            //     // `action` will be inferred as a RejectedAction due to isRejectedAction being defined as a type guard
-            //     (state, action) => {}
-            //   )
-            //   // and provide a default case if no other handlers matched
-            .addDefaultCase((state, action) => { })
+            .addCase(dataByCountriesFetched.fulfilled, (state, action) => {
+                state.selectedData = action.payload
+                state.shownData = action.payload
+                state.loading = false;
+                state.error = false;
+            })
+            .addCase(dataByCountriesFetched.pending, state => {
+                state.loading = true;
+            })
+            .addCase(dataByCountriesFetched.rejected, state => {
+                state.error = true;
+            })
+            .addCase(dataByDaysFetched.fulfilled, (state, action) => {
+                state.dataByDays = action.payload
+                state.loading = false;
+                state.error = false;
+            })
+            .addCase(dataByDaysFetched.pending, state => {
+                state.loading = true;
+            })
+            .addCase(dataByDaysFetched.rejected, state => {
+                state.error = true;
+            })
+            .addCase(countriesListFetched.fulfilled, (state, action) => {
+                state.countriesList = action.payload
+            })
+            .addDefaultCase(() => { })
     },
 })
 
 export default covidDataSlice.reducer
 
 export const {
-
+    shownDataSet,
+    loadingChanged
 } = covidDataSlice.actions;

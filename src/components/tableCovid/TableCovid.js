@@ -1,81 +1,73 @@
 import { useEffect, useState } from 'react';
-import { Row, Col, Form, Button, Spinner} from 'react-bootstrap';
+import { Row, Col, Form, Button } from 'react-bootstrap';
+import Spinner from '../Spinner/Spinner'
 import './tableCovid.scss'
-import ErrorMassage from '../errorMessage/ErrorMessage'
+import tableTitles from './tableTitles';
+import ErrorMassage from '../errorBoundary/ErrorMessage'
 
-import ButtonsOfTable from '../buttonsOfTable/ButtonsOfTable'
-import TablePucker from '../tablePucker/TablePucker';
+import ButtonsOfTable from './_ButtonsOfTable'
+import TablePucker from './_TablePucker';
+
+import { useSelector, useDispatch } from 'react-redux'
+import { shownDataSet  } from '../../slices/covidDataSlice'
+import { dataByCountriesFetched } from '../../slices/asyncThunk'
+import { getFilteredData, getSortedData } from '../../utils/dataUtils'
 
 function TableCovid() {
 
-    const [data, setData] = useState(null);
-    const [tableError, setTableError] = useState(false);
     const [activeBtn, setActiveBtn] = useState('country+');
+    const [activeCol, setActiveCol] = useState('country-cell');
+
     const [startRow, setStartRow] = useState(0);
     const [endRow, setEndRow] = useState(20);
     const [numOfRow, setNumOfRow] = useState(20);
+    const [numOfRowSelected, setNumOfRowSelected] = useState(20);
+
     const [filterFromValue, setFilterFromValue] = useState('');
     const [filterToValue, setFilterToValue] = useState('');
     const [filterId, setFilterId] = useState('cases');
     const [searchValue, setSearchValue] = useState('');
-    const [togglerGetData, setTogglerGetData] = useState(false);
-    const [activeCol, setActiveCol] = useState('country-cell');
-    
+
+    const { selectedData, shownData, error, loading } = useSelector(({ covidDataSlice }) => covidDataSlice);
+    const { selectedStartDate, selectedEndDate } = useSelector(({ datePickerSlice }) => datePickerSlice);
+
+    const dispatch = useDispatch();
 
     useEffect(() => {
-        setTableError(error);
-    }, [error])
+        if (selectedStartDate && selectedEndDate) {
+            dispatch(dataByCountriesFetched({
+                minDate: selectedStartDate,
+                maxDate: selectedEndDate,
+            }));
+        }
+    }, [selectedStartDate, selectedEndDate, dispatch])
 
     useEffect(() => {
-        setTogglerGetData(!togglerGetData);     
-    },[dateTo, dateFrom])
+        if (shownData < 20) return;
+        setNumOfRow(() => {
+            const result = shownData.length > numOfRowSelected ? numOfRowSelected : shownData.length
+            setEndRow(shownData.length > result ? result : shownData.length)
+            return result
+        })
+        setStartRow(0);
+    }, [shownData, numOfRowSelected])
 
     useEffect(() => {
-        if(dateTo && dateFrom){
-            getDataByCountries()
-                .then(res => {
-                    setLoadingInApp(false); 
-                    setTableError(false)
-                    setData(res)
-                    setNumOfRow((numOfRow) => {
-                        return res.length > numOfRow ? numOfRow : res.length; 
-                    })                                 
-                }).catch(err => {
-                    setLoadingInApp(false);
-                    setTableError(true)
-                    console.log(err);      
-                })
-        }  
-    },[togglerGetData])
-
-    useEffect(() => {
-        setSearchValue('');
-        const res = getFilteredData(filterId, filterFromValue ,filterToValue);
-        if(res) {
-            setData(res);
-            setStartRow(0);
-            setEndRow(res.length > numOfRow ? numOfRow : res.length);    
-        }  
-    }, [filterFromValue, filterToValue, filterId] )
+        if(selectedData.length < 0) return;
+        const temp = getFilteredData(selectedData, {searchValue, filterId, filterFromValue, filterToValue});
+        dispatch(shownDataSet(temp))
+    },[searchValue, filterId, filterFromValue, filterToValue, dispatch, selectedData])
 
     const onSearch = (str) => {
         setSearchValue(str);
-        
-        const res = getDataAfterSearch(str)
-        setStartRow(0);      
-        setEndRow(res.length > numOfRow ? numOfRow : res.length);  
-        setData(res)
-        setFilterFromValue('');
-        setFilterToValue('');     
     }     
 
     const onSortData = (e) => {
         const colId = e.target.getAttribute('data-col');
         setActiveCol(colId);
-        const res = getSortedData(e.target.id);
-        setData(res);
+        const res = getSortedData(e.target.id, shownData);
+        dispatch(shownDataSet(res))
         setActiveBtn(e.target.id);
-
     }
     
     const onReset = () => {
@@ -84,102 +76,83 @@ function TableCovid() {
         setFilterToValue('');
         setSearchValue('');
         setFilterId('cases');
-        setData(baseData)
         setStartRow(0);
-        setEndRow(numOfRow);               
-    }       
-  
-    const checkIndexTable = (num) => { //mini-validator for cheking index of row    
-        if (num < 0) {
-            return  0;
-        }
-        if (num > data.length ) {
-            return data.length ; 
-        } 
-        return num;
+        setEndRow(numOfRow);
     }
 
-    const table = <TablePucker
-                    activeCol={activeCol}
-                    data={data}
-                    checkIndexTable={checkIndexTable}
-                    startRow={startRow}
-                    endRow={endRow}
-                    activeBtn={activeBtn}
-                    onSortData={onSortData}
-                    tableTitles={tableTitles}
-                    />;
+    const errorMessage = error && <ErrorMassage>Ошибка при получении данных. Обновите страницу.</ErrorMassage>;
 
-    const errorMessage = tableError ? <ErrorMassage>Ошибка при получении данных. Обновите страницу.</ErrorMassage>: null;
-    
-    const massage = data && data.length === 0 ? <Col className="fs-1 text-center py-5">Данных не найдено.</Col>: null;
-    
-    const spinner = !data && !tableError ? <Col className='d-flex justify-content-center'>
-                                                <Spinner animation="border" role="status" className="m-2">
-                                                    <span className="visually-hidden">Loading...</span>
-                                                </Spinner>
-                                            </Col> : null;
+    const massage = !loading && shownData && shownData.length === 0 && <Col className="fs-1 text-center py-5">Данных не найдено.</Col>;
 
-    const viewTable = data && !massage ? table: null;
+    const spinner = loading && <Spinner/>
 
-    const navBtns = viewTable ? <ButtonsOfTable 
-                                    data={data}
-                                    numOfRow={numOfRow} 
-                                    endRow={endRow}
-                                    startRow={startRow}
-                                    setNumOfRow={setNumOfRow}
-                                    setStartRow={setStartRow}
-                                    setEndRow={setEndRow}
-                                    checkIndexTable={checkIndexTable}/> : null;
+    const viewTable = !loading && !massage && <TablePucker
+        activeCol={activeCol}
+        shownData={shownData}
+        startRow={startRow}
+        endRow={endRow}
+        activeBtn={activeBtn}
+        onSortData={onSortData}
+        tableTitles={tableTitles} />;
 
-    const optionOfSelect = tableTitles.map((item,i) => {
-        if(i === 0) return false; 
-        return  <option key={i} value={item.id}>{item.text}</option>;      
+    const navBtns = viewTable && <ButtonsOfTable
+        shownData={shownData}
+        numOfRow={numOfRow}
+        endRow={endRow}
+        startRow={startRow}
+        setNumOfRow={setNumOfRow}
+        setStartRow={setStartRow}
+        setNumOfRowSelected={setNumOfRowSelected}
+        setEndRow={setEndRow} />;
+
+    const optionOfSelect = tableTitles.map((item, i) => {
+        if (i === 0) return false;
+        return <option key={i} value={item.id}>{item.text}</option>;
     })
-    
-   
+
+
     return (
         <>
             <Form.Label className="fs-3">Поиск по стране</Form.Label>
-            <Form.Control 
-                disabled={!data}
-                type="getDataAfterSearch" 
-                placeholder="Введите название страны на английском" 
+            <Form.Control
+                disabled={!shownData}
+                type="getDataAfterSearch"
+                placeholder="Введите название страны на английском"
                 className="mb-3"
                 value={searchValue}
                 onChange={(e) => onSearch(e.target.value)}
-                />
+            />
             <Row className="mb-3">
                 <Form.Label className="fs-3">Фильтрация по полю</Form.Label>
-                <Col lg='6'className="mb-3">
-                    <Form.Select aria-label="filterSelect" disabled={!data} value={filterId} onChange={(e) => setFilterId(e.target.value)}>
-                         {optionOfSelect}                    
+                <Col lg='6' className="mb-3">
+                    <Form.Select aria-label="filterSelect" disabled={!shownData} value={filterId} onChange={(e) => setFilterId(e.target.value)}>
+                        {optionOfSelect}
                     </Form.Select>
                 </Col>
                 <Col lg='3' className="pb-2">
-                    <Form.Label className="fs-3 d-inline d-inline-block" style={{'width': '36px'}}>от</Form.Label>
-                    <Form.Control 
-                        type="number" 
-                        placeholder="Введите значение от" 
-                        className="m-0 ms-1 d-inline w-75 align-top" 
-                        disabled={!data}
+                    <Form.Label className="fs-3 d-inline d-inline-block" style={{ 'width': '36px' }}>от</Form.Label>
+                    <Form.Control
+                        type="number"
+                        placeholder="Введите значение от"
+                        className="m-0 ms-1 d-inline w-75 align-top"
+                        disabled={!shownData}
                         value={filterFromValue}
                         onChange={(e) => setFilterFromValue(e.target.value)}
-                        />
+                    />
                 </Col>
                 <Col lg='3' className="pb-2">
-                    <Form.Label className="fs-3 d-inline d-inline-block" style={{'width': '40px'}}>до</Form.Label>
-                    <Form.Control 
-                        type="number" 
-                        placeholder="Введите значение до" 
-                        className="m-0 d-inline w-75 align-top" 
-                        disabled={!data}
+                    <Form.Label className="fs-3 d-inline d-inline-block" style={{ 'width': '40px' }}>до</Form.Label>
+                    <Form.Control
+                        type="number"
+                        placeholder="Введите значение до"
+                        className="m-0 d-inline w-75 align-top"
+                        disabled={!shownData}
                         value={filterToValue}
                         onChange={(e) => setFilterToValue(e.target.value)}
-                        />
+                    />
                 </Col>
                 <Col>
-                    <Button onClick={onReset} disabled={!data} variant="danger" className="float-end">Сбросить фильтры</Button>
+                    <Button onClick={onReset} disabled={!shownData} variant="danger" className="float-end">Сбросить фильтры</Button>
                 </Col>
             </Row>
             <Row className="overflow-auto position-relative">
@@ -188,7 +161,7 @@ function TableCovid() {
                 {spinner}
                 {viewTable}
             </Row>
-            {navBtns}   
+            {navBtns}
         </>
     );
 }

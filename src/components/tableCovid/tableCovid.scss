@@ -1,3 +1,12 @@
 .active-cell {
     background: #e9ecef !important;
 } 
+
+
+.navBtn {
+    @media(hover: none) {
+        &:hover {
+            background-color: #0d6efd;
+        }
+    }
+}

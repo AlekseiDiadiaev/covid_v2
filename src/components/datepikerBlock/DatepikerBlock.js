@@ -3,7 +3,7 @@ import './datepickerBlock.scss'
 import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux'
 import { Row, Col, Image, Button, Collapse, Accordion, Spinner } from 'react-bootstrap';
-import Datepicker from '../datepicker/Datepicker';
+import Datepicker from './datepicker/Datepicker';
 import { format, } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
@@ -11,7 +11,7 @@ import { startDateChanged, endDateChanged } from '../../slices/datePickerSlice'
 import { minMaxDateFetched } from '../../slices/asyncThunk'
 
 function DatepickerBlock() {
-    const {minDate, maxDate, selectedStartDate, selectedEndDate} = useSelector(({ datePickerSlice }) => datePickerSlice)
+    const { minDate, maxDate, selectedStartDate, selectedEndDate } = useSelector(({ datePickerSlice }) => datePickerSlice)
     const dispatch = useDispatch();
     const [isVisibleFrom, setIsVisibleFrom] = useState(window.innerWidth > 768 ? true : false);
     const [isVisibleTo, setIsVisibleTo] = useState(window.innerWidth > 768 ? true : false);
@@ -21,9 +21,9 @@ function DatepickerBlock() {
 
     useEffect(() => {
         dispatch(minMaxDateFetched())
-    }, [])
+    }, [dispatch])
 
-    useEffect(() => {  
+    useEffect(() => {
         const handleResize = () => {
             setIsVisibleFrom(window.innerWidth > 768);
             setIsVisibleTo(window.innerWidth > 768);
@@ -33,7 +33,7 @@ function DatepickerBlock() {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
- 
+
     const handleReset = () => {
         dispatch(startDateChanged(minDate))
         dispatch(endDateChanged(maxDate))
@@ -91,7 +91,7 @@ function DatepickerBlock() {
 export default DatepickerBlock;
 
 
-const ViewDayPicker = ({ pikerTitle, activeKey, setActiveKey, isVisible, setIsVisible, selectedExtremesDate, pickerType, minDate, maxDate, reset, closeAccordion}) => {
+const ViewDayPicker = ({ pikerTitle, activeKey, setActiveKey, isVisible, setIsVisible, selectedExtremesDate, pickerType, minDate, maxDate, reset, closeAccordion }) => {
     return (
         <Col md='6' xl='4' className="d-flex justify-content-md-center flex-wrap">
             <div className='text-center d-block w-100 fs-2'>{pikerTitle}</div>

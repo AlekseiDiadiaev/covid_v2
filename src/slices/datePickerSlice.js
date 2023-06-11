@@ -42,7 +42,7 @@ export const datePikcerSlice = createSlice({
             .addCase(minMaxDateFetched.rejected, state => {
                 state.error = true;
             })
-            .addDefaultCase((state, action) => { })
+            .addDefaultCase(() => { })
     },
 })
 

@@ -3,7 +3,7 @@ import { Button } from 'react-bootstrap';
 
 const ScrollToTop = () => {
     const [isVisible, setIsVisible] = useState(false);
-    
+
     useEffect(() => {
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);

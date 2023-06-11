@@ -7,7 +7,7 @@ import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 
 import { useSelector, useDispatch } from 'react-redux'
-import { startDateChanged, endDateChanged } from '../../slices/datePickerSlice'
+import { startDateChanged, endDateChanged } from '../../../slices/datePickerSlice'
 
 
 export default function DatePiсker({ idPicker, minDate, maxDate, closeAccordion }) {
@@ -20,9 +20,7 @@ export default function DatePiсker({ idPicker, minDate, maxDate, closeAccordion
     const dispatch = useDispatch();
 
     useEffect(() => {
-        if (selected) {
-            dispatch(setSelected(selected));
-        }
+        if (selected) dispatch(setSelected(selected));
     }, [selected]);
 
     useEffect(() => {
@@ -32,15 +30,11 @@ export default function DatePiсker({ idPicker, minDate, maxDate, closeAccordion
     const onSelectDate = (e) => {
         const dateUTC = e - (new Date().getTimezoneOffset() * 60 * 1000)
         dispatch(setSelected(dateUTC))
-        if (window.innerWidth < 768) {
-            closeAccordion(dateUTC, idPicker);
-        }
+        if (window.innerWidth < 768) { closeAccordion(dateUTC, idPicker) }
     }
 
     let footer = <p>Пожалуйста выберите дату</p>;
-    if (selected) {
-        footer = <p>Выбрана дата {format(selected, 'PP', { locale: ru })}.</p>;
-    }
+    if (selected) { footer = <p>Выбрана дата {format(selected, 'PP', { locale: ru })}.</p> }
 
     return (
         <>
