@@ -7,7 +7,7 @@ import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 
 import { useSelector, useDispatch } from 'react-redux'
-import { startDateChanged, endDateChanged } from '../../../slices/datePickerSlice'
+import { startDateChanged, endDateChanged, errorChanged } from '../../../slices/datePickerSlice'
 
 
 export default function DatePiсker({ idPicker, minDate, maxDate, closeAccordion }) {
@@ -21,16 +21,20 @@ export default function DatePiсker({ idPicker, minDate, maxDate, closeAccordion
 
     useEffect(() => {
         if (selected) dispatch(setSelected(selected));
-    }, [selected]);
+    }, [selected, dispatch, setSelected]);
 
     useEffect(() => {
         setMonth(idPicker === 'min' ? selectedStartDate : selectedEndDate)
-    }, [selected])
+    }, [idPicker, selectedStartDate, selectedEndDate])
 
     const onSelectDate = (e) => {
         const dateUTC = e - (new Date().getTimezoneOffset() * 60 * 1000)
         dispatch(setSelected(dateUTC))
         if (window.innerWidth < 768) { closeAccordion(dateUTC, idPicker) }
+    }
+
+    const handelAlertClose = (bool) => {
+        dispatch(errorChanged(bool))
     }
 
     let footer = <p>Пожалуйста выберите дату</p>;
@@ -64,10 +68,10 @@ export default function DatePiсker({ idPicker, minDate, maxDate, closeAccordion
                 show
                 size="lg"
                 centered>
-                <Alert variant="danger" onClose={() => window.location.reload()} dismissible className='m-0'>
+                <Alert variant="danger" onClose={() => handelAlertClose(false)} dismissible className='m-0'>
                     <Alert.Heading>Произошла ошибка</Alert.Heading>
                     <p>
-                        К сожалению, не удалось получить данные. Пожалуйста, закройте это окно и попробуйте еще раз.
+                        К сожалению, не удалось получить данные. Пожалуйста, закройте это окно и перзагрузите страницу.
                         Если проблема сохраняется, пожалуйста, попробуйте позже. Извините за неудобства.
                     </p>
                 </Alert>

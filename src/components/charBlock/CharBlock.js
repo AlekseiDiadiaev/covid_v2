@@ -25,7 +25,7 @@ import { loadingChanged } from '../../slices/covidDataSlice'
 import { optoinsBigChar, optionsSmallChar } from './charConfig'
 
 function CharBlock() {
-    const [filterId, setFilterId] = useState('all');
+    const [filterId, setFilterId] = useState('All');
     const [isSmallScrean, setIsSmallScrean] = useState(false)
     const [dataForSelected, setDataForSelected] = useState([]);
 
@@ -56,9 +56,9 @@ function CharBlock() {
     useEffect(() => {
         if (!dataByDays || dataByDays.length < 0) return;
         dispatch(loadingChanged(true))
-        getDataByDaysForSelected(dataByDays, filterId)
-            .then(res => setDataForSelected(res))
-            .finally(() => dispatch(loadingChanged(false)))
+        const res = getDataByDaysForSelected(dataByDays, filterId)
+        setDataForSelected(res)
+        dispatch(loadingChanged(false))
     }, [dataByDays, filterId, dispatch])
 
 
@@ -119,7 +119,7 @@ function CharBlock() {
                 value={filterId}
                 onChange={(e) => setFilterId(e.target.value)}
                 disabled={loading}>
-                <option value='all'>Все страны</option>;
+                <option value='All'>Все страны</option>;
                 {optionOfSelectOfCountries}
             </Form.Select>
             <Col className="overflow-auto" style={{ 'minHeight': "539px" }}>

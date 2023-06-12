@@ -29,9 +29,11 @@ export const covidDataSlice = createSlice({
             })
             .addCase(dataByCountriesFetched.pending, state => {
                 state.loading = true;
+                state.error = false;
             })
             .addCase(dataByCountriesFetched.rejected, state => {
                 state.error = true;
+                state.loading = false;
             })
             .addCase(dataByDaysFetched.fulfilled, (state, action) => {
                 state.dataByDays = action.payload
@@ -40,9 +42,11 @@ export const covidDataSlice = createSlice({
             })
             .addCase(dataByDaysFetched.pending, state => {
                 state.loading = true;
+                state.error = false;
             })
             .addCase(dataByDaysFetched.rejected, state => {
                 state.error = true;
+                state.loading = false;
             })
             .addCase(countriesListFetched.fulfilled, (state, action) => {
                 state.countriesList = action.payload

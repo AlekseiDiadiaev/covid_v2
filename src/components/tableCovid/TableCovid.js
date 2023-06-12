@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Row, Col, Form, Button } from 'react-bootstrap';
 import Spinner from '../Spinner/Spinner'
 import './tableCovid.scss'
-import tableTitles from './tableTitles';
+import tableTitles from './_tableTitles';
 import ErrorMassage from '../errorBoundary/ErrorMessage'
 
 import ButtonsOfTable from './_ButtonsOfTable'
@@ -82,11 +82,11 @@ function TableCovid() {
 
     const errorMessage = error && <ErrorMassage>Ошибка при получении данных. Обновите страницу.</ErrorMassage>;
 
-    const massage = !loading && shownData && shownData.length === 0 && <Col className="fs-1 text-center py-5">Данных не найдено.</Col>;
+    const massage = !error && !loading && shownData && shownData.length === 0 && <Col className="fs-1 text-center py-5">Данных не найдено.</Col>;
 
-    const spinner = loading && <Spinner/>
+    const spinner = !error && loading && <Spinner/>
 
-    const viewTable = !loading && !massage && <TablePucker
+    const viewTable = !error && !loading && !massage && <TablePucker
         activeCol={activeCol}
         shownData={shownData}
         startRow={startRow}

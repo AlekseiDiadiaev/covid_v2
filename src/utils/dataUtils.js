@@ -61,43 +61,27 @@ export const getSortedData = (id, currentData) => {
 }
 
 
-export const getDataByDaysForSelected = async (data, country) => {
+export const getDataByDaysForSelected = (data, country) => {
     if (!country) return false;
-        
+
     const arrAllDays = data.map(item => {
         return item.date
     })
-    
+
     const arrUniqueDays = Array.from(new Set(arrAllDays)).map(item => {
         return { date: item, parsedDate: Date.parse(item) };
     })
     arrUniqueDays.sort((a, b) => a.parsedDate - b.parsedDate);
-   
-    if (country === 'all') {
-        let result = []
-        for (let i = 0; i < arrUniqueDays.length; i++){
-            if(i % 100 === 0) {await new Promise(resolve => setTimeout(resolve, 0))}
-            
-            const resArr = data.filter(elem => elem.date === arrUniqueDays[i].date)
-            let resCases = 0, 
-                resDeaths = 0;
-            resArr.forEach(elem => {
-                resCases += +elem.cases
-                resDeaths += +elem.deaths
-            })
-            result.push({ cases: resCases, date: arrUniqueDays[i].date, deaths: resDeaths }) 
-        }
-        return result;
-    } else {
-        let daysOfCountry = data.filter(item => item.country === country);
-        let result = arrUniqueDays.map(item => {
-            let resArr = daysOfCountry.find(elem => elem.date === item.date)
-            const resCases = resArr ? resArr.cases : 0;
-            const resDeaths = resArr ? resArr.deaths : 0;
-            return { cases: resCases, date: item.date, deaths: resDeaths }
-        })
-        return result;    
-    }
+
+    let daysOfCountry = data.filter(item => item.country === country);
+    let result = arrUniqueDays.map(item => {
+        let resArr = daysOfCountry.find(elem => elem.date === item.date)
+        const resCases = resArr ? resArr.cases : 0;
+        const resDeaths = resArr ? resArr.deaths : 0;
+        return { cases: resCases, date: item.date, deaths: resDeaths }
+    })
+    return result;
+
 }
 
 

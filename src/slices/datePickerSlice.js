@@ -24,6 +24,9 @@ export const datePikcerSlice = createSlice({
         endDateChanged(state, action) {
             state.selectedEndDate = action.payload;
         },
+        errorChanged(state, action) {
+            state.error = action.payload;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -38,9 +41,11 @@ export const datePikcerSlice = createSlice({
             })
             .addCase(minMaxDateFetched.pending, state => {
                 state.loading = true;
+                state.error = false;
             })
             .addCase(minMaxDateFetched.rejected, state => {
                 state.error = true;
+                state.loading = false;
             })
             .addDefaultCase(() => { })
     },
@@ -52,5 +57,6 @@ export const {
     minDateSet,
     maxDateSet,
     startDateChanged,
-    endDateChanged
+    endDateChanged,
+    errorChanged
 } = datePikcerSlice.actions;
