@@ -1,4 +1,4 @@
-const _api = 'http://covid.ua/';
+const _api = 'http://doublethinker.pw/';
 
 const _request = async (url, method = 'GET', body, headers) => {
     try {
